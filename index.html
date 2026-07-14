@@ -554,7 +554,7 @@
       </div>
       <div class="paper">
         <div class="exam reveal" style="--d:.12s">
-          <div class="exam-head"><span><b>Question 1.</b> Book a session</span><span>[Total: 3 marks]</span></div>
+          <div class="exam-head"><span><b>Question 1.</b> Book a session</span><span>[Total: 4 marks]</span></div>
           <form id="bookingForm">
             <div class="field">
               <label><span><b>(a)</b> Select a slot from the timetable</span><span class="marks">[1]</span></label>
@@ -629,6 +629,7 @@
 <footer>
   <span>© 2026 Mr Rhoden — GCSE Mathematics, Sheffield</span>
   <a href="mailto:dion22899@hotmail.co.uk">dion22899@hotmail.co.uk</a>
+  <a>07456795205</a>
   <span class="qed">Q.E.D.&nbsp;<span class="sq"></span></span>
 </footer>
 
@@ -1029,12 +1030,11 @@
     times:['10:00','11:00','16:00','17:00','18:00','19:00'],
     // 1 = open to requests, 0 = not offered. EDIT AVAILABILITY HERE (rows = times, columns = days).
     open:[
-      [0,0,0,0,0,1,0],  // 10:00
-      [0,0,0,0,0,1,0],  // 11:00
-      [1,1,1,1,1,0,0],  // 16:00
+      [1,1,1,0,0,0,0],  // 16:00
       [1,1,1,1,1,0,0],  // 17:00
       [1,1,1,1,1,0,0],  // 18:00
-      [1,1,1,1,0,0,0]   // 19:00
+      [1,1,1,1,1,0,0],  // 19:00
+      [1,1,1,1,0,0,0]   // 20:00
     ]
   };
   var DAY_FULL={Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
