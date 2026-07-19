@@ -1091,8 +1091,9 @@
     }
     var name=document.getElementById('b-name').value.trim();
     var email=document.getElementById('b-email').value.trim();
+    var details=document.getElementById('b-details').value.trim();
     var subject='Booking request — '+DAY_FULL[selSlot.day]+' '+selSlot.time+' — '+name;
-    var body='Name: '+name+'\nEmail: '+email+'\nRequested slot: '+DAY_FULL[selSlot.day]+' at '+selSlot.time+' (weekly)\n\nSent from the booking page.';
+    var body='Name: '+name+'\nEmail: '+email+'\nRequested slot: '+DAY_FULL[selSlot.day]+' at '+selSlot.time+' (weekly)\nDetails: '+details+'\n\nSent from the booking page.';
     window.location.href='mailto:dion22899@hotmail.co.uk?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
   });
 
