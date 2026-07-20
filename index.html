@@ -61,8 +61,8 @@
   }
   header nav a b{color:var(--red);font-weight:400;margin-right:.6em}
   header nav a:hover{background:var(--black);color:var(--white)}
-  .hamburger{display:none;background:none;border:none;cursor:pointer;padding:14px var(--pad);font-family:var(--mono);font-size:16px;color:var(--red);font-weight:700}
-  .hamburger:hover{color:var(--black)}
+  .hamburger{display:none;background:none;border:none;border-left:1px solid var(--black);cursor:pointer;padding:14px 26px;font-family:var(--mono);font-size:26px;line-height:1;color:var(--red);font-weight:700}
+  .hamburger:hover{background:var(--black);color:var(--white)}
   @media(max-width:860px){
     header nav{
       position:fixed;top:49px;left:0;right:0;z-index:49;
@@ -710,60 +710,86 @@
   }
 
   /* ---------- fig 0.1 : Euler ---------- */
+  function sstep(a,b,x){ x=Math.max(0,Math.min(1,(x-a)/(b-a))); return x*x*(3-2*x); }
+  // draws a centred "e" with a small superscript, measured so it never mis-aligns
+  function drawComplex(ctx, cxp, cyp, sup){
+    var F=17;
+    ctx.textBaseline='alphabetic'; ctx.textAlign='left';
+    ctx.font='italic '+F+'px "Times New Roman", serif';
+    var wE=ctx.measureText('e').width;
+    ctx.font='italic '+(F*0.62)+'px "Times New Roman", serif';
+    var wS=ctx.measureText(sup).width;
+    var sx=cxp-(wE+wS)/2;
+    ctx.fillStyle=BLACK;
+    ctx.font='italic '+F+'px "Times New Roman", serif';
+    ctx.fillText('e', sx, cyp);
+    ctx.font='italic '+(F*0.62)+'px "Times New Roman", serif';
+    ctx.fillText(sup, sx+wE, cyp-F*0.42);
+    ctx.textAlign='center';
+  }
   function drawEuler(canvas, p){
     var f=fit(canvas), ctx=f.ctx, w=f.w, h=f.h;
-    var cx=w/2, cy=h/2, R=Math.min(w,h)/2-46;
+    var cx=w/2, cy=h/2, R=Math.min(w,h)/2-42;
     ctx.clearRect(0,0,w,h);
-    // axes
-    ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(14,cy); ctx.lineTo(w-14,cy); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cx,14); ctx.lineTo(cx,h-14); ctx.stroke();
-    ctx.fillStyle='rgba(0,0,0,.55)'; ctx.font=MONO; ctx.textAlign='center';
-    ctx.fillText('1', cx+R, cy+16);
-    ctx.fillText('−1', cx-R, cy+16);
-    ctx.fillText('i', cx+12, cy-R+4);
-    ctx.fillText('Re', w-22, cy-8);
-    ctx.fillText('Im', cx+18, 22);
-    // unit circle draws in
-    var cp = Math.min(p/0.3, 1);
-    ctx.strokeStyle=BLACK; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.arc(cx,cy,R, -Math.PI/2, -Math.PI/2 + easeO(cp)*Math.PI*2); ctx.stroke();
-    // theta sweep 0 -> pi
-    if(p>0.34){
-      var t = easeIO(Math.min((p-0.34)/0.58, 1));
-      var th = t*Math.PI;
-      var px = cx + R*Math.cos(th), py = cy - R*Math.sin(th);
-      // traced arc in red
-      ctx.strokeStyle=RED; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.arc(cx,cy,R, 0, -th, true); ctx.stroke();
-      // radius
-      ctx.strokeStyle=BLACK; ctx.lineWidth=1.5;
-      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
-      // theta label
-      if(th>0.35){
-        ctx.strokeStyle='rgba(0,0,0,.5)'; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.arc(cx,cy,26, 0, -th*0.999, true); ctx.stroke();
-        ctx.fillStyle=BLACK; ctx.font='italic 13px "Times New Roman", serif';
-        var mid=th/2;
-        ctx.fillText('θ', cx+40*Math.cos(mid), cy-40*Math.sin(mid)+4);
-      }
-      // moving point + label
-      ctx.fillStyle=RED;
-      ctx.fillRect(px-5, py-5, 10, 10);
-      ctx.font='italic 15px "Times New Roman", serif'; ctx.fillStyle=BLACK; ctx.textAlign='left';
-      var lx = px + (Math.cos(th)>=0? 12 : -14), ly = py - 12;
-      if(Math.cos(th)<0) ctx.textAlign='right';
-      ctx.fillText('e', lx, ly);
-      ctx.font='italic 10px "Times New Roman", serif';
-      ctx.fillText('iθ', lx + 8, ly-5);
-      ctx.textAlign='center';
+    ctx.lineJoin='round'; ctx.lineCap='round'; ctx.textBaseline='alphabetic';
+
+    // ---- choreography timings ----
+    var tAxis=sstep(0,0.12,p);              // axes + labels fade in
+    var tCircle=sstep(0.10,0.32,p);         // circle draws itself
+    var sweepStart=0.34, sweepEnd=0.90;
+    var swept = p>sweepStart ? easeIO(Math.min((p-sweepStart)/(sweepEnd-sweepStart),1)) : 0;
+    var th=swept*Math.PI;
+    var hasPoint = p>sweepStart;
+    var px=cx+R*Math.cos(th), py=cy-R*Math.sin(th);
+    // static labels fade out as the travelling dot approaches them — no overlaps
+    function prox(x,y){ if(!hasPoint) return 1; return sstep(14,40,Math.hypot(x-px,y-py)); }
+
+    // ---- axes + arrowheads ----
+    ctx.strokeStyle='rgba(0,0,0,'+(0.22*tAxis)+')'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(16,cy); ctx.lineTo(w-16,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,h-16); ctx.lineTo(cx,16); ctx.stroke();
+    ctx.fillStyle='rgba(0,0,0,'+(0.32*tAxis)+')';
+    ctx.beginPath(); ctx.moveTo(w-15,cy); ctx.lineTo(w-24,cy-4); ctx.lineTo(w-24,cy+4); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx,15); ctx.lineTo(cx-4,24); ctx.lineTo(cx+4,24); ctx.closePath(); ctx.fill();
+
+    // ---- unit marks: 1, i, −1 ----
+    ctx.font=MONO; ctx.textAlign='center';
+    ctx.fillStyle='rgba(0,0,0,'+(0.55*tAxis*prox(cx+R,cy+17))+')'; ctx.fillText('1', cx+R, cy+17);
+    ctx.fillStyle='rgba(0,0,0,'+(0.55*tAxis*prox(cx-R,cy+17))+')'; ctx.fillText('−1', cx-R, cy+17);
+    ctx.textAlign='right'; ctx.font='italic 13px "Times New Roman", serif';
+    ctx.fillStyle='rgba(0,0,0,'+(0.65*tAxis*prox(cx-11,cy-R+5))+')'; ctx.fillText('i', cx-11, cy-R+5);
+    ctx.textAlign='center';
+
+    // ---- unit circle ----
+    if(tCircle>0){
+      ctx.strokeStyle='rgba(0,0,0,.9)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+easeO(tCircle)*Math.PI*2); ctx.stroke();
     }
-    // arrival at −1
-    if(p>0.94){
-      ctx.fillStyle=RED;
-      ctx.fillRect(cx-R-6, cy-6, 12, 12);
-      ctx.fillStyle=BLACK; ctx.font=MONO;
-      ctx.fillText('θ = π', cx-R, cy-16);
+
+    if(hasPoint){
+      // swept sector (translucent) + traced arc
+      ctx.fillStyle='rgba(255,0,0,0.07)';
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,0,-th,true); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle=RED; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(cx,cy,R,0,-th,true); ctx.stroke();
+      // radius
+      ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
+      // θ arc + label near the centre
+      if(th>0.18){
+        ctx.strokeStyle='rgba(255,0,0,.55)'; ctx.lineWidth=1.25;
+        ctx.beginPath(); ctx.arc(cx,cy,22,0,-th,true); ctx.stroke();
+        var mid=th/2;
+        ctx.fillStyle=RED; ctx.font='italic 13px "Times New Roman", serif';
+        ctx.fillText('θ', cx+38*Math.cos(mid), cy-38*Math.sin(mid)+4);
+      }
+      // travelling dot: white halo + red core
+      ctx.beginPath(); ctx.arc(px,py,6.5,0,Math.PI*2); ctx.fillStyle=WHITE; ctx.fill();
+      ctx.beginPath(); ctx.arc(px,py,4.5,0,Math.PI*2); ctx.fillStyle=RED; ctx.fill();
+      // e^{iθ} label, held just outside the circle, clamped to the frame
+      var lr=R+20, lx=cx+lr*Math.cos(th), ly=cy-lr*Math.sin(th);
+      lx=Math.max(26,Math.min(w-26,lx)); ly=Math.max(22,Math.min(h-14,ly));
+      drawComplex(ctx, lx, ly, swept>0.985 ? 'iπ' : 'iθ');
     }
   }
   function typeEq(){
