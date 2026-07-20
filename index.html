@@ -61,7 +61,18 @@
   }
   header nav a b{color:var(--red);font-weight:400;margin-right:.6em}
   header nav a:hover{background:var(--black);color:var(--white)}
-  @media(max-width:860px){header nav{display:none}}
+  .hamburger{display:none;background:none;border:none;cursor:pointer;padding:14px var(--pad);font-family:var(--mono);font-size:16px;color:var(--red);font-weight:700}
+  .hamburger:hover{color:var(--black)}
+  @media(max-width:860px){
+    header nav{
+      position:fixed;top:49px;left:0;right:0;z-index:49;
+      background:var(--white);border-bottom:1px solid var(--black);
+      flex-direction:column;max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1);
+    }
+    header nav.open{max-height:50vh}
+    header nav a{border-left:none;border-bottom:1px solid var(--hair);padding:16px var(--pad)}
+    .hamburger{display:block}
+  }
 
   /* ============ HERO ============ */
   .hero{
@@ -371,7 +382,8 @@
 
 <header>
   <a class="brand" href="#top">Mr Rhoden <span class="sq" style="width:8px;height:8px"></span></a>
-  <nav aria-label="Sections">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">≡</button>
+  <nav id="navMenu" aria-label="Sections">
     <a href="#about"><b>1.0</b> Philosophy</a>
     <a href="#experience"><b>2.0</b> Experience</a>
     <a href="#tuition"><b>3.0</b> Tuition</a>
@@ -1095,6 +1107,23 @@
     var subject='Booking request — '+DAY_FULL[selSlot.day]+' '+selSlot.time+' — '+name;
     var body='Name: '+name+'\nEmail: '+email+'\nRequested slot: '+DAY_FULL[selSlot.day]+' at '+selSlot.time+' (weekly)\nDetails: '+details+'\n\nSent from the booking page.';
     window.location.href='mailto:dion22899@hotmail.co.uk?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  });
+
+  /* ---------- mobile nav ---------- */
+  var hamburger=document.getElementById('hamburger');
+  var navMenu=document.getElementById('navMenu');
+  function closeNav(){
+    navMenu.classList.remove('open');
+    hamburger.setAttribute('aria-expanded','false');
+    hamburger.textContent='≡';
+  }
+  hamburger.addEventListener('click', function(){
+    var open=navMenu.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open?'true':'false');
+    hamburger.textContent = open ? '×' : '≡';
+  });
+  navMenu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', closeNav);
   });
 
   /* ---------- ticker duplication for seamless loop ---------- */
